@@ -13,35 +13,34 @@ class Handler {
   void registerHandlers() {
     print('Registering handlers...');
 
-    _bot.on(
+    _subscribeHandler(
       _bot.filters.privateChat * _bot.filters.photo * _bot.filters.caption,
-      (ctx) async {
-        print('📸 Photo with text received!');
-        await _handleImageMessage(ctx);
-      },
+      '📸 Photo with text received',
+      _handleImageAsync,
     );
 
-    _bot.on(_bot.filters.text - _bot.filters.command, (ctx) async {
-      print('📝 Text received: ${ctx.text}');
-      await _handleTextMessage(ctx);
-    });
+    _subscribeHandler(
+      _bot.filters.photo - _bot.filters.caption,
+      '📸 Photo with text received',
+      (ctx) => ctx.reply('Добавьте фильтр к изображению'),
+    );
 
-    _bot.on(
-      _bot.filters.privateChat * (_bot.filters.photo - _bot.filters.caption),
-      (ctx) async {
-        print('🖼️ Photo without text received!');
-        await ctx.reply('Добавьте фильтр к изображению');
-      },
+    _subscribeHandler(_bot.filters.text - _bot.filters.command,
+      '📝 Text received',
+      _handleSendImageAsync,
     );
   }
 
-  Future<void> _handleImageMessage(Context ctx) async {
+  Future<void> _handleImageAsync(Context ctx) async {
     try {
       final text = ctx.caption?.replaceAll(' ', '').toLowerCase();
       final photo = await ctx.getMessageFile();
 
-      if (photo == null || text == null || text.isEmpty) {
-        await ctx.reply('Отправьте изображение с фильтром');
+      if (photo == null) {
+        return;
+      }
+      if (text == null || text.isEmpty) {
+        await ctx.reply('Добавьте название фильтра к изображению');
         return;
       }
 
@@ -61,10 +60,10 @@ class Handler {
     }
   }
 
-  Future<void> _handleTextMessage(Context ctx) async {
+  Future<void> _handleSendImageAsync(Context ctx) async {
     final filter = ctx.text?.replaceAll(' ', '').toLowerCase();
 
-    if (filter == null || filter.isEmpty || filter.startsWith('/')) {
+    if (filter == null || filter.isEmpty) {
       return;
     }
 
@@ -105,5 +104,16 @@ class Handler {
 
   String _formatDate(DateTime date) {
     return '${date.day}.${date.month}.${date.year} ${date.hour}:${date.minute}';
+  }
+
+  void _subscribeHandler(
+    Filter<Context> filter,
+    String logText,
+    Function(Context) callback,
+  ) {
+    _bot.on(filter, (ctx) async {
+      print('$logText: ${ctx.text}');
+      await callback(ctx);
+    });
   }
 }

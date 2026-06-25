@@ -10,6 +10,7 @@ class Command {
   void registerCommands() {
     _bot.command('start', startCommandAsync);
     _bot.command('help', helpCommandAsync);
+    _bot.command('filter', filterHintCommandAsync);
     _bot.command('filters', getListFiltersCommandAsync);
   }
 
@@ -18,8 +19,9 @@ class Command {
       await ctx.reply(
         '/start - Информация о боте\n'
         '/help - Помощь\n'
-        '/filters - Список фильтров\n'
-        '[filter] - Найти изображение по фильтру',
+        '/filter <filter_name> - Создать фильтр\n'
+        '<filter_name> - Найти изображение по фильтру\n'
+        '/filters - Список фильтров',
       );
     } catch (e) {
       print('Error sending list commands: $e');
@@ -30,12 +32,28 @@ class Command {
   Future<void> helpCommandAsync(Context ctx) async {
     try {
       await ctx.reply(
-        'Чтобы создать фильтр, нужно отправить изображение с текстовым описанием\n'
-        'Чтобы отправить изображение, нужно ввести фильтр [filter]',
+        'Для создания фильтра следует использовать команду:\n /filter <filter_name>',
       );
     } catch (e) {
       print('Error sending list commands: $e');
       await ctx.reply('Ошибка при получения списка фильтров');
+    }
+  }
+
+  Future<void> filterHintCommandAsync(Context ctx) async {
+    try {
+      if (ctx.text != null &&
+          ctx.text!.replaceAll(' ', '').startsWith('/filter')) {
+        if (ctx.text?.length == 7) {
+          await ctx.reply(
+            "Создать фильтр: /filter <filter_name> и прикрепить изображение",
+          );
+        } else if (ctx.text!.length > 7 && await ctx.getMessageFile() == null) {
+          await ctx.reply('Добавьте изображение');
+        }
+      }
+    } catch (e) {
+      await ctx.reply('Ошибка при создании фильтра: $e');
     }
   }
 
