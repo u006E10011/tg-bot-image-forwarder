@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:televerse/telegram.dart';
 import 'package:televerse/televerse.dart';
 import 'package:tg_bot_image_forwarder/data.dart';
 
@@ -12,25 +13,31 @@ class Handler {
   void registerHandlers() {
     print('Registering handlers...');
 
-    _bot.on(_bot.filters.photo * _bot.filters.caption, (ctx) async {
-      print('📸 Photo with text received!');
-      await _handleImageMessage(ctx);
-    });
+    _bot.on(
+      _bot.filters.privateChat * _bot.filters.photo * _bot.filters.caption,
+      (ctx) async {
+        print('📸 Photo with text received!');
+        await _handleImageMessage(ctx);
+      },
+    );
 
     _bot.on(_bot.filters.text - _bot.filters.command, (ctx) async {
       print('📝 Text received: ${ctx.text}');
       await _handleTextMessage(ctx);
     });
 
-    _bot.on(_bot.filters.photo - _bot.filters.caption, (ctx) async {
-      print('🖼️ Photo without text received!');
-      await ctx.reply('Добавьте фильтр к изображению');
-    });
+    _bot.on(
+      _bot.filters.privateChat * (_bot.filters.photo - _bot.filters.caption),
+      (ctx) async {
+        print('🖼️ Photo without text received!');
+        await ctx.reply('Добавьте фильтр к изображению');
+      },
+    );
   }
 
   Future<void> _handleImageMessage(Context ctx) async {
     try {
-      final text = ctx.caption;
+      final text = ctx.caption?.replaceAll(' ', '').toLowerCase();
       final photo = await ctx.getMessageFile();
 
       if (photo == null || text == null || text.isEmpty) {
@@ -39,7 +46,7 @@ class Handler {
       }
 
       final imageData = ImageData(
-        text.trim().toLowerCase(),
+        text,
         photo.fileId,
         photo.fileSize!,
         DateTime.now(),
@@ -55,7 +62,7 @@ class Handler {
   }
 
   Future<void> _handleTextMessage(Context ctx) async {
-    final filter = ctx.text?.trim().toLowerCase();
+    final filter = ctx.text?.replaceAll(' ', '').toLowerCase();
 
     if (filter == null || filter.isEmpty || filter.startsWith('/')) {
       return;
@@ -64,10 +71,12 @@ class Handler {
     try {
       final imageData = _data.getImage(filter);
 
-      if (imageData == null) {
+      if (imageData == null && ctx.chat?.type == ChatType.private) {
         ctx.reply(
           'Фильтр "$filter" не найден. Используйте /filters для списка',
         );
+        return;
+      } else if (imageData == null) {
         return;
       }
 
