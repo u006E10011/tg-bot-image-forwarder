@@ -36,6 +36,14 @@ class ImageData {
   DateTime createdAt;
 
   ImageData(this.filter, this.fileId, this.fileSize, this.createdAt);
+  
+  @override
+  String toString() {
+    return 'filter: $filter\n'
+        'fileId: $fileId\n'
+        'fileSize: ${formatBytes(fileSize, 2)}\n'
+        'createdAt: ${formatDate(createdAt)}\n';
+  }
 
   static String formatBytes(int bytes, int decimals) {
     if (bytes <= 0) return "0 B";
@@ -43,6 +51,8 @@ class ImageData {
     var i = (log(bytes) / log(1024)).floor();
     return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)} ${suffixes[i]}';
   }
+
+  static String formatDate(DateTime date) {
+    return '${date.day}.${date.month}.${date.year} ${date.hour}:${date.minute}';
+  }
 }
-
-

@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:televerse/telegram.dart';
 import 'package:televerse/televerse.dart';
 import 'package:tg_bot_image_forwarder/data.dart';
 
@@ -25,7 +22,8 @@ class Handler {
       (ctx) => ctx.reply('Добавьте фильтр к изображению'),
     );
 
-    _subscribeHandler(_bot.filters.text - _bot.filters.command,
+    _subscribeHandler(
+      _bot.filters.text - _bot.filters.command,
       '📝 Text received',
       _handleSendImageAsync,
     );
@@ -34,11 +32,12 @@ class Handler {
   Future<void> _handleImageAsync(Context ctx) async {
     try {
       final text = ctx.caption?.replaceAll(' ', '').toLowerCase();
-      final photo = await ctx.getMessageFile();
+      final photo = ctx.message?.photo!.last;
 
       if (photo == null) {
         return;
       }
+
       if (text == null || text.isEmpty) {
         await ctx.reply('Добавьте название фильтра к изображению');
         return;
@@ -70,40 +69,27 @@ class Handler {
     try {
       final imageData = _data.getImage(filter);
 
-      if (imageData == null && ctx.chat?.type == ChatType.private) {
-        ctx.reply(
+      if (imageData == null) {
+        await ctx.reply(
           'Фильтр "$filter" не найден. Используйте /filters для списка',
         );
         return;
-      } else if (imageData == null) {
-        return;
       }
 
-      final file = await _bot.api.getFile(imageData.fileId);
-      final downloaded = await file.download(token: _bot.token, path: '../img');
-
-      if (downloaded == null) {
-        await ctx.reply('Не удалось загрузить файл');
-        return;
-      }
-
-      final photo = InputFile.fromFile(downloaded);
+      final image = InputFile.fromFileId(imageData.fileId);
+      print(imageData.toString());
 
       await ctx.replyWithPhoto(
-        photo,
+        image,
         caption:
             'Фильтр: $filter\n'
             'Размер: ${ImageData.formatBytes(imageData.fileSize, 2)}\n'
-            'Добавлено: ${_formatDate(imageData.createdAt)}',
+            'Добавлено: ${ImageData.formatDate(imageData.createdAt)}',
       );
     } catch (e) {
       print('Error sending photo by text: $e');
       await ctx.reply('Ошибка при поиске фото');
     }
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}.${date.month}.${date.year} ${date.hour}:${date.minute}';
   }
 
   void _subscribeHandler(
