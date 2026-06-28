@@ -3,7 +3,7 @@ import 'package:tg_bot_image_forwarder/data.dart';
 
 class ImageHandler {
   final Bot _bot;
-  final Data _data;
+  final DataStorage _data;
 
   ImageHandler(this._bot, this._data);
 
@@ -43,6 +43,13 @@ class ImageHandler {
         return;
       }
 
+      if (_data.getListFilters().contains(text)) {
+        await ctx.reply('Фильтр "$text" уже существует');
+        await _sendImageAsync(ctx, text);
+
+        return;
+      }
+
       final imageData = ImageData(
         text,
         photo.fileId,
@@ -50,7 +57,7 @@ class ImageHandler {
         DateTime.now(),
       );
 
-      _data.add(imageData);
+      await _data.addAsync(imageData);
 
       await ctx.reply('Сохранено с фильтром: "$text"');
     } catch (e) {
@@ -66,6 +73,10 @@ class ImageHandler {
       return;
     }
 
+    await _sendImageAsync(ctx, filter);
+  }
+
+  Future<void> _sendImageAsync(Context ctx, String filter) async {
     try {
       final imageData = _data.getImage(filter);
 
@@ -89,6 +100,7 @@ class ImageHandler {
     } catch (e) {
       print('Error sending photo by text: $e');
       await ctx.reply('Ошибка при поиске фото');
+      rethrow;
     }
   }
 

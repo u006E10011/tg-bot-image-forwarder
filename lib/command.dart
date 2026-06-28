@@ -3,7 +3,7 @@ import 'package:tg_bot_image_forwarder/data.dart';
 
 class Command {
   final Bot _bot;
-  final Data _data;
+  final DataStorage _data;
 
   Command(this._bot, this._data);
 
@@ -81,7 +81,7 @@ class Command {
     }
 
     if (_data.getListFilters().contains(ctx.args[0])) {
-      _data.removeFilter(ctx.args[0]);
+      await _data.removeFilterAsync(ctx.args[0]);
       await ctx.reply('Удалён фильтр: ${ctx.args[0]}');
     } else {
       await ctx.reply(
