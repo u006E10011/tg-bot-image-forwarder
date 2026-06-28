@@ -1,11 +1,11 @@
 import 'package:televerse/televerse.dart';
 import 'package:tg_bot_image_forwarder/data.dart';
 
-class Handler {
+class ImageHandler {
   final Bot _bot;
   final Data _data;
 
-  Handler(this._bot, this._data);
+  ImageHandler(this._bot, this._data);
 
   void registerHandlers() {
     print('Registering handlers...');
@@ -13,11 +13,11 @@ class Handler {
     _subscribeHandler(
       _bot.filters.privateChat * _bot.filters.photo * _bot.filters.caption,
       '📸 Photo with text received',
-      _handleImageAsync,
+      _handleAddImageAsync,
     );
 
     _subscribeHandler(
-      _bot.filters.photo - _bot.filters.caption,
+      _bot.filters.privateChat * _bot.filters.photo - _bot.filters.caption,
       '📸 Photo with text received',
       (ctx) => ctx.reply('Добавьте фильтр к изображению'),
     );
@@ -29,7 +29,7 @@ class Handler {
     );
   }
 
-  Future<void> _handleImageAsync(Context ctx) async {
+  Future<void> _handleAddImageAsync(Context ctx) async {
     try {
       final text = ctx.caption?.replaceAll(' ', '').toLowerCase();
       final photo = ctx.message?.photo!.last;

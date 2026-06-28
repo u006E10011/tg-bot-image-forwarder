@@ -8,7 +8,7 @@ void main() async {
   final env = DotEnv(includePlatformEnvironment: true)..load();
   final bot = Bot(env['TOKEN'] as String);
   final data = Data();
-  final handler = Handler(bot, data);
+  final handler = ImageHandler(bot, data);
   final command = Command(bot, data);
 
   command.registerCommands();

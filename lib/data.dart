@@ -27,6 +27,12 @@ class Data {
     }
     return [];
   }
+
+  void removeFilter(String filter) {
+    if (data.containsKey(filter)) {
+      data.remove(filter);
+    }
+  }
 }
 
 class ImageData {
@@ -36,7 +42,7 @@ class ImageData {
   DateTime createdAt;
 
   ImageData(this.filter, this.fileId, this.fileSize, this.createdAt);
-  
+
   @override
   String toString() {
     return 'filter: $filter\n'

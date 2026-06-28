@@ -12,6 +12,7 @@ class Command {
     _bot.command('help', helpCommandAsync);
     _bot.command('filter', filterHintCommandAsync);
     _bot.command('filters', getListFiltersCommandAsync);
+    _bot.command('remove', removeFilterAsync);
   }
 
   Future<void> startCommandAsync(Context ctx) async {
@@ -20,6 +21,7 @@ class Command {
         '/start - Информация о боте\n'
         '/help - Помощь\n'
         '/filter <filter_name> - Создать фильтр\n'
+        '/remove <filter_name> - Удалить фильтр\n'
         '<filter_name> - Найти изображение по фильтру\n'
         '/filters - Список фильтров',
       );
@@ -70,6 +72,21 @@ class Command {
     } catch (e) {
       print('Error sending list commands: $e');
       await ctx.reply('Ошибка при получения списка фильтров');
+    }
+  }
+
+  Future<void> removeFilterAsync(Context ctx) async {
+    if (ctx.args.isEmpty) {
+      return;
+    }
+
+    if (_data.getListFilters().contains(ctx.args[0])) {
+      _data.removeFilter(ctx.args[0]);
+      await ctx.reply('Удалён фильтр: ${ctx.args[0]}');
+    } else {
+      await ctx.reply(
+        'Фильтра "${ctx.args[0]}" не существует. Посмотреть список фильтров /filters',
+      );
     }
   }
 }
