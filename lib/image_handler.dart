@@ -1,5 +1,5 @@
 import 'package:televerse/televerse.dart';
-import 'package:tg_bot_image_forwarder/data.dart';
+import 'package:tg_bot_image_forwarder/all.dart';
 
 class ImageHandler {
   final Bot _bot;

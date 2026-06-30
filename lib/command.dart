@@ -1,5 +1,5 @@
 import 'package:televerse/televerse.dart';
-import 'package:tg_bot_image_forwarder/data.dart';
+import 'package:tg_bot_image_forwarder/all.dart';
 
 class Command {
   final Bot _bot;
@@ -39,8 +39,8 @@ class Command {
         '/filters - Список фильтров',
       );
     } catch (e) {
-      print('Error sending list commands: $e');
-      await ctx.reply('Ошибка при получения списка комманд');
+      print('Error sending help message: $e');
+      await ctx.reply('Ошибка при получении помощи');
     }
   }
 
