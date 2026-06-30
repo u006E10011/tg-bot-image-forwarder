@@ -67,8 +67,17 @@ class Command {
         await ctx.reply('Нет фильтров');
         return;
       }
+      String text = '';
 
-      await ctx.reply(filters.join('\n'));
+      for (int i = 0; i < filters.length - 1; i++) {
+        text += '├── ${i + 1}: ${filters[i]}\n';
+      }
+
+      text += '└── ${filters.length} ${filters[filters.length - 1]}\n';
+
+      await ctx.reply(
+        'Фильтры: ${filters.length}\n${text.substring(0, text.length - 1)}',
+      );
     } catch (e) {
       print('Error sending list commands: $e');
       await ctx.reply('Ошибка при получения списка фильтров');
