@@ -13,32 +13,34 @@ class Command {
     _bot.command('filter', filterHintCommandAsync);
     _bot.command('filters', getListFiltersCommandAsync);
     _bot.command('remove', removeFilterAsync);
+    _bot.command('edit', editFilterAsync);
   }
 
   Future<void> startCommandAsync(Context ctx) async {
     try {
       await ctx.reply(
-        '/start - Информация о боте\n'
-        '/help - Помощь\n'
-        '/filter <filter_name> - Создать фильтр\n'
-        '/remove <filter_name> - Удалить фильтр\n'
-        '<filter_name> - Найти изображение по фильтру\n'
-        '/filters - Список фильтров',
+        'Bot: ${_bot.me.username}/@${_bot.me.username}\n'
+        'Developer: он .rar/@ryadevn\n',
       );
     } catch (e) {
-      print('Error sending list commands: $e');
-      await ctx.reply('Ошибка при получения списка комманд');
+      print('Error sending start message: $e');
     }
   }
 
   Future<void> helpCommandAsync(Context ctx) async {
     try {
       await ctx.reply(
-        'Для создания фильтра следует использовать команду:\n /filter <filter_name>',
+        '/start - Информация о боте\n'
+        '/help - Помощь\n'
+        '/filter <filter_name> - Создать фильтр\n'
+        '/remove <filter_name> - Удалить фильтр\n'
+        '/edit <old_filter_name> <new_filter_name> - Изменить фильтр\n'
+        '<filter_name> - Найти изображение по фильтру\n'
+        '/filters - Список фильтров',
       );
     } catch (e) {
       print('Error sending list commands: $e');
-      await ctx.reply('Ошибка при получения списка фильтров');
+      await ctx.reply('Ошибка при получения списка комманд');
     }
   }
 
@@ -96,6 +98,36 @@ class Command {
       await ctx.reply(
         'Фильтра "${ctx.args[0]}" не существует. Посмотреть список фильтров /filters',
       );
+    }
+  }
+
+  Future<void> editFilterAsync(Context ctx) async {
+    if (ctx.args.length < 2) {
+      await ctx.reply('Используйте: /edit <old_filter> <new_filter>');
+      return;
+    }
+
+    final oldFilter = ctx.args[0];
+    final newFilter = ctx.args[1];
+    final listFilters = _data.getListFilters();
+
+    if (!listFilters.contains(oldFilter)) {
+      await ctx.reply('Фильтр "$oldFilter" не найден');
+      return;
+    }
+
+    if (listFilters.contains(newFilter)) {
+      await ctx.reply('Фильтр "$newFilter" уже существует');
+      return;
+    }
+
+    try {
+      await _data.editFilterAsync(oldFilter, newFilter);
+      await ctx.reply('Фильтр "$oldFilter" изменён на "$newFilter"');
+    } catch (e) {
+      print('Error editing filter: $e');
+      await ctx.reply('Произошла ошибка при изменении фильтра');
+      rethrow;
     }
   }
 }

@@ -44,6 +44,16 @@ class DataStorage {
     }
   }
 
+  Future<void> editFilterAsync(String oldFilter, String newFilter) async {
+    if (data.containsKey(oldFilter) && !data.containsKey(newFilter)) {
+      final imageData = data[oldFilter]!;
+      data.remove(oldFilter);
+      imageData.filter = newFilter;
+      data[newFilter] = imageData;
+      await saveAsync();
+    }
+  }
+
   void _initStorage() {
     final currentDir = io.Directory.current.path;
     final dataDir = path.join(currentDir, folder);
