@@ -4,22 +4,25 @@ import 'package:tg_bot_image_forwarder/all.dart';
 class Command {
   final Bot _bot;
   final DataStorage _data;
+  final FilterPreview _filterPreview;
 
-  Command(this._bot, this._data);
+  Command(this._bot, this._data) : _filterPreview = FilterPreview(_data);
 
   void registerCommands() {
     _bot.command('start', startCommandAsync);
     _bot.command('help', helpCommandAsync);
     _bot.command('filter', filterHintCommandAsync);
-    _bot.command('filters', getListFiltersCommandAsync);
+    _bot.command('filters', _filterPreview.getPreview);
     _bot.command('remove', removeFilterAsync);
     _bot.command('edit', editFilterAsync);
+
+    _bot.onCallbackQuery(_filterPreview.callbackQueryHandler);
   }
 
   Future<void> startCommandAsync(Context ctx) async {
     try {
       await ctx.reply(
-        'Bot: ${_bot.me.username}/@${_bot.me.username}\n'
+        'Bot: ${_bot.botInfo.me!.firstName}/@${_bot.me.username}\n'
         'Developer: он .rar/@ryadevn\n',
       );
     } catch (e) {
@@ -46,43 +49,15 @@ class Command {
 
   Future<void> filterHintCommandAsync(Context ctx) async {
     try {
-      if (ctx.text != null &&
-          ctx.text!.replaceAll(' ', '').startsWith('/filter')) {
+      if (ctx.text != null && ctx.text!.replaceAll(' ', '').startsWith('/filter')) {
         if (ctx.text?.length == 7) {
-          await ctx.reply(
-            "Создать фильтр: /filter <filter_name> и прикрепить изображение",
-          );
+          await ctx.reply("Создать фильтр: /filter <filter_name> и прикрепить изображение");
         } else if (ctx.text!.length > 7 && await ctx.getMessageFile() == null) {
           await ctx.reply('Добавьте изображение');
         }
       }
     } catch (e) {
       await ctx.reply('Ошибка при создании фильтра: $e');
-    }
-  }
-
-  Future<void> getListFiltersCommandAsync(Context ctx) async {
-    try {
-      final filters = _data.getListFilters();
-
-      if (filters.isEmpty) {
-        await ctx.reply('Нет фильтров');
-        return;
-      }
-      String text = '';
-
-      for (int i = 0; i < filters.length - 1; i++) {
-        text += '├── ${i + 1}: ${filters[i]}\n';
-      }
-
-      text += '└── ${filters.length} ${filters[filters.length - 1]}\n';
-
-      await ctx.reply(
-        'Фильтры: ${filters.length}\n${text.substring(0, text.length - 1)}',
-      );
-    } catch (e) {
-      print('Error sending list commands: $e');
-      await ctx.reply('Ошибка при получения списка фильтров');
     }
   }
 
@@ -95,9 +70,7 @@ class Command {
       await _data.removeFilterAsync(ctx.args[0]);
       await ctx.reply('Удалён фильтр: ${ctx.args[0]}');
     } else {
-      await ctx.reply(
-        'Фильтра "${ctx.args[0]}" не существует. Посмотреть список фильтров /filters',
-      );
+      await ctx.reply('Фильтра "${ctx.args[0]}" не существует. Посмотреть список фильтров /filters');
     }
   }
 
