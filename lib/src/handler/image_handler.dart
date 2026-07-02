@@ -1,3 +1,4 @@
+import 'package:televerse/telegram.dart';
 import 'package:televerse/televerse.dart';
 import 'package:tg_bot_image_forwarder/image_forwarder.dart';
 
@@ -22,11 +23,7 @@ class ImageHandler {
       (ctx) => ctx.reply('Добавьте фильтр к изображению'),
     );
 
-    _subscribeHandler(
-      _bot.filters.text - _bot.filters.command,
-      '📝 Text received',
-      _handleSendImageAsync,
-    );
+    _subscribeHandler(_bot.filters.text - _bot.filters.command, '📝 Text received', _handleSendImageAsync);
   }
 
   Future<void> _handleAddImageAsync(Context ctx) async {
@@ -50,12 +47,7 @@ class ImageHandler {
         return;
       }
 
-      final imageData = ImageData(
-        text,
-        photo.fileId,
-        photo.fileSize!,
-        DateTime.now(),
-      );
+      final imageData = ImageData(text, photo.fileId, photo.fileSize!, DateTime.now());
 
       await _data.addAsync(imageData);
 
@@ -67,36 +59,36 @@ class ImageHandler {
   }
 
   Future<void> _handleSendImageAsync(Context ctx) async {
-    final filter = ctx.text?.replaceAll(' ', '').toLowerCase();
-
-    if (filter == null || filter.isEmpty) {
+    final text = ctx.text?.replaceAll(' ', '').toLowerCase();
+    var targetFilter = '';
+    if (text == null || text.isEmpty) {
       return;
     }
 
-    await _sendImageAsync(ctx, filter);
+    for (String filter in _data.getListFilters()) {
+      if (text.contains(filter)) {
+        targetFilter = filter;
+      }
+    }
+
+    if (ctx.chat!.type == ChatType.private && targetFilter.isEmpty) {
+      await ctx.reply('Фильтр "$text" не найден. Используйте /filters для просмотра списка');
+      return;
+    }
+
+    if (targetFilter.isEmpty) {
+      return;
+    }
+
+    await _sendImageAsync(ctx, targetFilter);
   }
 
   Future<void> _sendImageAsync(Context ctx, String filter) async {
     try {
-      final imageData = _data.getImage(filter);
-
-      if (imageData == null) {
-        await ctx.reply(
-          'Фильтр "$filter" не найден. Используйте /filters для списка',
-        );
-        return;
-      }
-
+      final imageData = _data.getImage(filter)!;
       final image = InputFile.fromFileId(imageData.fileId);
-      print(imageData.toString());
 
-      await ctx.replyWithPhoto(
-        image,
-        caption:
-            'Фильтр: $filter\n'
-            'Размер: ${ImageData.formatBytes(imageData.fileSize, 2)}\n'
-            'Добавлено: ${ImageData.formatDate(imageData.createdAt)}',
-      );
+      await ctx.replyWithPhoto(image, caption: ctx.chat!.type == ChatType.private ? _captionImage(imageData) : null);
     } catch (e) {
       print('Error sending photo by text: $e');
       await ctx.reply('Ошибка при поиске фото');
@@ -104,14 +96,18 @@ class ImageHandler {
     }
   }
 
-  void _subscribeHandler(
-    Filter<Context> filter,
-    String logText,
-    Function(Context) callback,
-  ) {
+  void _subscribeHandler(Filter<Context> filter, String logText, Function(Context) callback) {
     _bot.on(filter, (ctx) async {
       print('$logText: ${ctx.text}');
       await callback(ctx);
     });
+  }
+
+  String _captionImage(ImageData data) {
+    return '''
+Фильтр: ${data.filter}
+Размер: ${ImageData.formatBytes(data.fileSize, 2)}
+Добавлено: ${ImageData.formatDate(data.createdAt)}
+''';
   }
 }
