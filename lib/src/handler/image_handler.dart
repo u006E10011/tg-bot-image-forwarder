@@ -1,4 +1,3 @@
-import 'package:televerse/telegram.dart';
 import 'package:televerse/televerse.dart';
 import 'package:tg_bot_image_forwarder/image_forwarder.dart';
 
@@ -71,7 +70,7 @@ class ImageHandler {
       }
     }
 
-    if (ctx.chat!.type == ChatType.private && targetFilter.isEmpty) {
+    if (await _bot.isNotPrivateChat(ctx, false) == false && targetFilter.isEmpty) {
       await ctx.reply('Фильтр "$text" не найден. Используйте /filters для просмотра списка');
       return;
     }
@@ -90,7 +89,7 @@ class ImageHandler {
 
       await ctx.replyWithPhoto(
         image,
-        caption: ctx.chat!.type == ChatType.private ? ImageHandlerUtils.captionImage(imageData) : null,
+        caption: await _bot.isNotPrivateChat(ctx, false) == false ? ImageHandlerUtils.captionImage(imageData) : null,
       );
     } catch (e) {
       print('Error sending photo by text: $e');

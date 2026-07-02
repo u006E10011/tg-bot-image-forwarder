@@ -49,6 +49,10 @@ class Command {
 
   Future<void> filterHintCommandAsync(Context ctx) async {
     try {
+      if (await _bot.isNotPrivateChat(ctx)) {
+        return;
+      }
+
       if (ctx.text != null && ctx.text!.startsWith('/filter')) {
         if (ctx.text?.length == 7) {
           await ctx.reply("Создать фильтр: /filter <filter_name> и прикрепить изображение");
@@ -62,7 +66,7 @@ class Command {
   }
 
   Future<void> removeFilterAsync(Context ctx) async {
-    if (ctx.args.isEmpty) {
+    if (ctx.args.isEmpty || await _bot.isNotPrivateChat(ctx)) {
       return;
     }
 
@@ -75,6 +79,10 @@ class Command {
   }
 
   Future<void> editFilterAsync(Context ctx) async {
+    if (await _bot.isNotPrivateChat(ctx)) {
+      return;
+    }
+
     if (ctx.args.length < 2) {
       await ctx.reply('Используйте: /edit <old_filter> <new_filter>');
       return;
