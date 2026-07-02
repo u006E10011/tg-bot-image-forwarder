@@ -49,7 +49,7 @@ class Command {
 
   Future<void> filterHintCommandAsync(Context ctx) async {
     try {
-      if (ctx.text != null && ctx.text!.replaceAll(' ', '').startsWith('/filter')) {
+      if (ctx.text != null && ctx.text!.startsWith('/filter')) {
         if (ctx.text?.length == 7) {
           await ctx.reply("Создать фильтр: /filter <filter_name> и прикрепить изображение");
         } else if (ctx.text!.length > 7 && await ctx.getMessageFile() == null) {

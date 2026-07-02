@@ -11,19 +11,19 @@ class ImageHandler {
   void registerHandlers() {
     print('Registering handlers...');
 
-    _subscribeHandler(
+    _bot.subscribeHandler(
       _bot.filters.privateChat * _bot.filters.photo * _bot.filters.caption,
       '📸 Photo with text received',
       _handleAddImageAsync,
     );
 
-    _subscribeHandler(
+    _bot.subscribeHandler(
       _bot.filters.privateChat * _bot.filters.photo - _bot.filters.caption,
       '📸 Photo with text received',
       (ctx) => ctx.reply('Добавьте фильтр к изображению'),
     );
 
-    _subscribeHandler(_bot.filters.text - _bot.filters.command, '📝 Text received', _handleSendImageAsync);
+    _bot.subscribeHandler(_bot.filters.text - _bot.filters.command, '📝 Text received', _handleSendImageAsync);
   }
 
   Future<void> _handleAddImageAsync(Context ctx) async {
@@ -88,26 +88,14 @@ class ImageHandler {
       final imageData = _data.getImage(filter)!;
       final image = InputFile.fromFileId(imageData.fileId);
 
-      await ctx.replyWithPhoto(image, caption: ctx.chat!.type == ChatType.private ? _captionImage(imageData) : null);
+      await ctx.replyWithPhoto(
+        image,
+        caption: ctx.chat!.type == ChatType.private ? ImageHandlerUtils.captionImage(imageData) : null,
+      );
     } catch (e) {
       print('Error sending photo by text: $e');
       await ctx.reply('Ошибка при поиске фото');
       rethrow;
     }
-  }
-
-  void _subscribeHandler(Filter<Context> filter, String logText, Function(Context) callback) {
-    _bot.on(filter, (ctx) async {
-      print('$logText: ${ctx.text}');
-      await callback(ctx);
-    });
-  }
-
-  String _captionImage(ImageData data) {
-    return '''
-Фильтр: ${data.filter}
-Размер: ${ImageData.formatBytes(data.fileSize, 2)}
-Добавлено: ${ImageData.formatDate(data.createdAt)}
-''';
   }
 }
