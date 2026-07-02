@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:televerse/telegram.dart';
 import 'package:televerse/televerse.dart';
-import 'package:tg_bot_image_forwarder/tg_bot_image_forwarder.dart';
+import 'package:tg_bot_image_forwarder/image_forwarder.dart';
 
 class FilterPreview {
   static const int step = 10;

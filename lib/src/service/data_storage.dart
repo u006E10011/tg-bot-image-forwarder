@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io' as io;
 import 'package:path/path.dart' as path;
-import 'package:tg_bot_image_forwarder/tg_bot_image_forwarder.dart';
+import 'package:tg_bot_image_forwarder/image_forwarder.dart';
 
 class DataStorage {
   static const String folder = 'data';

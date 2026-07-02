@@ -1,5 +1,6 @@
 library image_forwarder;
 
+export 'package:tg_bot_image_forwarder/src/bot.dart';
 export 'package:tg_bot_image_forwarder/src/command/command.dart';
 export 'package:tg_bot_image_forwarder/src/service/data_storage.dart';
 export 'package:tg_bot_image_forwarder/src/handler/image_handler.dart';
