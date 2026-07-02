@@ -1,3 +1,4 @@
+import 'package:televerse/telegram.dart';
 import 'package:televerse/televerse.dart';
 import 'package:tg_bot_image_forwarder/image_forwarder.dart';
 
@@ -89,6 +90,7 @@ class ImageHandler {
       await ctx.replyWithPhoto(
         image,
         caption: await _bot.isNotPrivateChat(ctx, false) == false ? ImageHandlerUtils.captionImage(imageData) : null,
+        replyParameters: ReplyParameters(messageId: ctx.message!.messageId),
       );
     } catch (e) {
       print('Error sending photo by text: $e');
