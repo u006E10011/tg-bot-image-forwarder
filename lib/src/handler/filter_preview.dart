@@ -8,12 +8,15 @@ class FilterPreview {
   static const int step = 10;
 
   final DataStorage _data;
+  final DeleteMessage _deleteMessage;
   int _currentIndex = 0;
 
-  FilterPreview(this._data);
+  FilterPreview(Bot bot, this._data) : _deleteMessage = DeleteMessage(bot);
 
   Future<void> getPreview(Context ctx) async {
     try {
+      await _deleteMessage.deleteMessagesAsync(ctx);
+
       final allFilters = _data.getListFilters();
 
       if (allFilters.isEmpty) {
@@ -22,7 +25,6 @@ class FilterPreview {
       }
 
       final maxIndex = (allFilters.length / step).ceil() - 1;
-
       final index = step * _currentIndex;
       final range = (index, min(index + step, allFilters.length));
       final filters = allFilters.getRange(range.$1, range.$2).toList();
@@ -34,7 +36,7 @@ class FilterPreview {
           .row()
           .text('Список фильтров', 'filter_list');
 
-      await ctx.replyWithMediaGroup(
+      var mediaGroupMessage = await ctx.replyWithMediaGroup(
         filters.map((filter) {
           final imageData = _data.getImage(filter);
           if (imageData == null) {
@@ -48,11 +50,13 @@ class FilterPreview {
         }).toList(),
       );
 
-      await ctx.reply(
+      var keyboardMessage = await ctx.reply(
         'Фильтры: ${range.$1 + 1}-${range.$2}/${allFilters.length}',
         replyMarkup: keyboard,
         parseMode: ParseMode.html,
       );
+
+      _deleteMessage.register(ctx, <Message>[...mediaGroupMessage, keyboardMessage]);
     } catch (e, stackTrace) {
       print('Error in getPreview: $e');
       print('StackTrace: $stackTrace');

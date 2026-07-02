@@ -49,7 +49,6 @@ class ImageHandler {
       final imageData = ImageData(text, photo.fileId, photo.fileSize!, DateTime.now());
 
       await _data.addAsync(imageData);
-
       await ctx.reply('Сохранено с фильтром: "$text"');
     } catch (e) {
       print('Error handling image: $e');

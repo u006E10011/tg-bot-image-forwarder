@@ -6,7 +6,7 @@ class Command {
   final DataStorage _data;
   final FilterPreview _filterPreview;
 
-  Command(this._bot, this._data) : _filterPreview = FilterPreview(_data);
+  Command(this._bot, this._data) : _filterPreview = FilterPreview(_bot, _data);
 
   void registerCommands() {
     _bot.command('start', startCommandAsync);
