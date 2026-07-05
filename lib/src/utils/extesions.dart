@@ -9,7 +9,11 @@ extension SubscribeHandler on Bot {
     });
   }
 
-  Future<bool> isNotPrivateChat(Context ctx, [bool sendText = true]) async {
+  Future<bool> isPrivateChat(Context ctx, [bool sendText = true]) async {
+    return !(await isPublicChat(ctx, sendText));
+  }
+
+  Future<bool> isPublicChat(Context ctx, [bool sendText = true]) async {
     final isPrivate = ctx.chat?.type == ChatType.private;
 
     if (isPrivate && sendText) {

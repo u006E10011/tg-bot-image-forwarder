@@ -49,7 +49,7 @@ class Command {
 
   Future<void> filterHintCommandAsync(Context ctx) async {
     try {
-      if (await _bot.isNotPrivateChat(ctx)) {
+      if (await _bot.isPublicChat(ctx)) {
         return;
       }
 
@@ -66,7 +66,7 @@ class Command {
   }
 
   Future<void> removeFilterAsync(Context ctx) async {
-    if (ctx.args.isEmpty || await _bot.isNotPrivateChat(ctx)) {
+    if (ctx.args.isEmpty || await _bot.isPublicChat(ctx)) {
       return;
     }
 
@@ -79,7 +79,7 @@ class Command {
   }
 
   Future<void> editFilterAsync(Context ctx) async {
-    if (await _bot.isNotPrivateChat(ctx)) {
+    if (await _bot.isPublicChat(ctx)) {
       return;
     }
 

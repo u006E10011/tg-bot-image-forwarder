@@ -15,8 +15,8 @@ class DeleteMessage {
   Future<void> deleteMessagesAsync(Context ctx) async {
     try {
       List<Future<void>> query = [];
-      for (var messageId in message!.messageId) {
-        query.add(_bot.api.deleteMessage(ID.create(message!.chatId), messageId));
+      for (var messageId in message.messageId) {
+        query.add(_bot.api.deleteMessage(ID.create(message.chatId), messageId));
       }
       await Future.wait(query);
     } catch (e) {

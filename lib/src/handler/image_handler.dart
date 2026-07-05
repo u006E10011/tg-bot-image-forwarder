@@ -23,7 +23,11 @@ class ImageHandler {
       (ctx) => ctx.reply('Добавьте фильтр к изображению'),
     );
 
-    _bot.subscribeHandler(_bot.filters.text - _bot.filters.command, '📝 Text received', _handleSendImageAsync);
+    _bot.subscribeHandler(
+      _bot.filters.text - _bot.filters.command,
+      '📝 Text received',
+      _handleSendImageAsync,
+    );
   }
 
   Future<void> _handleAddImageAsync(Context ctx) async {
@@ -47,7 +51,12 @@ class ImageHandler {
         return;
       }
 
-      final imageData = ImageData(text, photo.fileId, photo.fileSize!, DateTime.now());
+      final imageData = ImageData(
+        text,
+        photo.fileId,
+        photo.fileSize!,
+        DateTime.now(),
+      );
 
       await _data.addAsync(imageData);
       await ctx.reply('Сохранено с фильтром: "$text"');
@@ -70,12 +79,14 @@ class ImageHandler {
       }
     }
 
-    if (await _bot.isNotPrivateChat(ctx, false) == false && targetFilter.isEmpty) {
-      await ctx.reply('Фильтр "$text" не найден. Используйте /filters для просмотра списка');
+    if (await _bot.isPublicChat(ctx, false) && targetFilter.isEmpty) {
       return;
     }
 
-    if (targetFilter.isEmpty) {
+    if (await _bot.isPrivateChat(ctx, false) && targetFilter.isEmpty) {
+      await ctx.reply(
+        'Фильтр "$text" не найден. Используйте /filters для просмотра списка',
+      );
       return;
     }
 
@@ -89,7 +100,9 @@ class ImageHandler {
 
       await ctx.replyWithPhoto(
         image,
-        caption: await _bot.isNotPrivateChat(ctx, false) == false ? ImageHandlerUtils.captionImage(imageData) : null,
+        caption: await _bot.isPrivateChat(ctx, false)
+            ? ImageHandlerUtils.captionImage(imageData)
+            : null,
         replyParameters: ReplyParameters(messageId: ctx.message!.messageId),
       );
     } catch (e) {
