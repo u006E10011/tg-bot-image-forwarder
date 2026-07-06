@@ -5,9 +5,11 @@ export 'package:tg_bot_image_forwarder/src/bot.dart';
 export 'package:tg_bot_image_forwarder/src/command/command.dart';
 
 // Handler
+export 'package:tg_bot_image_forwarder/src/handler/base/filter_handler.dart';
 export 'package:tg_bot_image_forwarder/src/handler/base/media_handler.dart';
 export 'package:tg_bot_image_forwarder/src/handler/base/media_handler_factory.dart';
 export 'package:tg_bot_image_forwarder/src/handler/image_handler.dart';
+export 'package:tg_bot_image_forwarder/src/handler/sticker_handler.dart';
 
 // Service
 export 'package:tg_bot_image_forwarder/src/service/data_storage.dart';

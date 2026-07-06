@@ -1,14 +1,15 @@
 import 'package:televerse/telegram.dart' show ReplyParameters;
 import 'package:televerse/televerse.dart';
-import 'package:tg_bot_image_forwarder/image_forwarder.dart' show MediaHandler, SubscribeHandler, ImageHandlerUtils, DataStorage, MediaModule, MediaType;
+import 'package:tg_bot_image_forwarder/image_forwarder.dart'
+    show MediaHandler, SubscribeHandler, ImageHandlerUtils, DataStorage, MediaModule, MediaType;
 
-class ImageHander implements MediaHandler {
+class ImageHandler implements MediaHandler {
   @override
   Bot<Context> bot;
   @override
   DataStorage data;
 
-  ImageHander(this.bot, this.data);
+  ImageHandler(this.bot, this.data);
 
   @override
   Future<void> handleAddAsync(Context ctx) async {
