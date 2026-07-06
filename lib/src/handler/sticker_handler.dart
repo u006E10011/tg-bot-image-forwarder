@@ -27,7 +27,7 @@ class StickerHandler implements MediaHandler {
       final filterData = MediaModule(
         text,
         ctx.message!.replyToMessage!.sticker!.fileId,
-        MediaType.image,
+        MediaType.sticker,
         DateTime.now(),
       );
 

@@ -35,6 +35,13 @@ class DataStorage {
     return [];
   }
 
+  List<String> getListFiltersByType(MediaType type) {
+    if (data.isNotEmpty) {
+      return data.values.where((media) => media.filterType == type).map((e) => e.filter).toList();
+    }
+    return [];
+  }
+
   Future<void> removeFilterAsync(String filter) async {
     if (data.containsKey(filter)) {
       data.remove(filter);

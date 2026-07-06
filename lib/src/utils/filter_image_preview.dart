@@ -17,7 +17,7 @@ class FilterImagePreview {
     try {
       await _deleteMessage.deleteMessagesAsync(ctx);
 
-      final allFilters = _data.getListFilters();
+      final allFilters = _data.getListFiltersByType(MediaType.image);
 
       if (allFilters.isEmpty) {
         await ctx.reply('Нет доступных фильтров');
@@ -29,7 +29,7 @@ class FilterImagePreview {
       final range = (index, min(index + step, allFilters.length));
       final filters = allFilters.getRange(range.$1, range.$2).toList();
 
-      final content = 'Фильтры: ${allFilters.length}\n${TreeFormatter.formatRange(allFilters, range.$1, range.$2)}';
+      final content = 'Фильтры (image/sticker/total): ${allFilters.length}/${_data.getListFiltersByType(MediaType.sticker).length}/${_data.getListFilters().length}\n${TreeFormatter.formatRange(allFilters, range.$1, range.$2)}';
       final keyboard = InlineKeyboard()
           .text(_currentIndex > 0 ? '<< 10' : ' --- ', _currentIndex > 0 ? 'back' : 'none')
           .text(_currentIndex < maxIndex ? '10 >>' : ' --- ', _currentIndex < maxIndex ? 'next' : 'none')
@@ -72,7 +72,7 @@ class FilterImagePreview {
     try {
       await ctx.answerCallbackQuery(text: 'Загрузка...');
 
-      final allFilters = _data.getListFilters();
+      final allFilters = _data.getListFiltersByType(MediaType.image);
 
       if (allFilters.isEmpty) {
         await ctx.reply('Нет доступных фильтров');
