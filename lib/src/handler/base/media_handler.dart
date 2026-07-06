@@ -1,3 +1,4 @@
+import 'package:televerse/telegram.dart' show Message;
 import 'package:televerse/televerse.dart';
 import 'package:tg_bot_image_forwarder/image_forwarder.dart' show MediaType, DataStorage;
 

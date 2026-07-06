@@ -38,7 +38,7 @@ class FilterImagePreview {
 
       var mediaGroupMessage = await ctx.replyWithMediaGroup(
         filters.map((filter) {
-          final imageData = _data.getImage(filter);
+          final imageData = _data.getMedia(filter);
           if (imageData == null) {
             throw Exception('Image data not found for filter: $filter');
           }

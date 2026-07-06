@@ -13,19 +13,9 @@ class ImageHandler implements MediaHandler {
 
   @override
   Future<void> handleAddAsync(Context ctx) async {
+    final text = ctx.argsString!.toLowerCase();
+
     try {
-      final text = ctx.caption?.replaceAll(' ', '').toLowerCase();
-      final photo = ctx.message?.photo!.last;
-
-      if (photo == null) {
-        return;
-      }
-
-      if (text == null || text.isEmpty) {
-        await ctx.reply('Добавьте название фильтра к изображению');
-        return;
-      }
-
       if (data.getListFilters().contains(text)) {
         await ctx.reply('Фильтр "$text" уже существует');
         await sendMediaAsync(ctx, text);
@@ -33,7 +23,12 @@ class ImageHandler implements MediaHandler {
         return;
       }
 
-      final filterData = MediaModule(text, photo.fileId, MediaType.image, DateTime.now());
+      final filterData = MediaModule(
+        text,
+        ctx.message!.replyToMessage!.photo!.last.fileId,
+        MediaType.image,
+        DateTime.now(),
+      );
 
       await data.addAsync(filterData);
       await ctx.reply('Сохранено с фильтром: "$text"');
@@ -45,7 +40,7 @@ class ImageHandler implements MediaHandler {
 
   @override
   Future<void> handleSendAsync(Context ctx) async {
-    final text = ctx.text?.replaceAll(' ', '').toLowerCase();
+    final text = ctx.text?.toLowerCase();
     var targetFilter = '';
     if (text == null || text.isEmpty) {
       return;
@@ -72,12 +67,12 @@ class ImageHandler implements MediaHandler {
   @override
   Future<void> sendMediaAsync(Context ctx, String filter) async {
     try {
-      final imageData = data.getImage(filter)!;
-      final image = InputFile.fromFileId(imageData.fileId);
+      final media = data.getMedia(filter)!;
+      final image = InputFile.fromFileId(media.fileId);
 
       await ctx.replyWithPhoto(
         image,
-        caption: await bot.isPrivateChat(ctx, false) ? ImageHandlerUtils.captionImage(imageData) : null,
+        caption: await bot.isPrivateChat(ctx, false) ? ImageHandlerUtils.captionImage(media) : null,
         replyParameters: ReplyParameters(messageId: ctx.message!.messageId),
       );
     } catch (e) {

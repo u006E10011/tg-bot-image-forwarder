@@ -14,12 +14,12 @@ extension SubscribeHandler on Bot {
   }
 
   Future<bool> isPublicChat(Context ctx, [bool sendText = true]) async {
-    final isPrivate = ctx.chat?.type == ChatType.private;
+    final isPublic = !(ctx.chat?.type == ChatType.private);
 
-    if (isPrivate && sendText) {
+    if (isPublic && sendText) {
       await ctx.reply('Команда ${ctx.command} доступна только в приватном чате');
     }
 
-    return isPrivate;
+    return isPublic;
   }
 }

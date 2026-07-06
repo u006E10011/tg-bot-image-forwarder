@@ -5,8 +5,9 @@ class Command {
   final Bot _bot;
   final DataStorage _data;
   final FilterImagePreview _filterPreview;
+  final MediaHandlerFactory _mediaHandlerFactory;
 
-  Command(this._bot, this._data) : _filterPreview = FilterImagePreview(_bot, _data);
+  Command(this._bot, this._data, this._mediaHandlerFactory) : _filterPreview = FilterImagePreview(_bot, _data);
 
   void registerCommands() {
     _bot.command('start', startCommandAsync);
@@ -56,8 +57,18 @@ class Command {
       if (ctx.text != null && ctx.text!.startsWith('/filter')) {
         if (ctx.text?.length == 7) {
           await ctx.reply("Создать фильтр: /filter <filter_name> и прикрепить изображение");
-        } else if (ctx.text!.length > 7 && await ctx.getMessageFile() == null) {
-          await ctx.reply('Добавьте изображение');
+        } else if (ctx.text!.length > 7) {
+          final replyMsg = ctx.message?.replyToMessage;
+
+          if (replyMsg != null) {
+            switch (replyMsg) {
+              case var msg when msg.photo != null:
+                print('Photo ${msg.photo!.last.fileId}');
+                await _mediaHandlerFactory.getHandler(MediaType.image).handleAddAsync(ctx);
+              case var msg when msg.sticker != null:
+                await _mediaHandlerFactory.getHandler(MediaType.sticker).handleAddAsync(ctx);
+            }
+          }
         }
       }
     } catch (e) {
