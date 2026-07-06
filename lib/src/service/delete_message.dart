@@ -1,15 +1,15 @@
 import 'package:televerse/telegram.dart';
 import 'package:televerse/televerse.dart';
-import 'package:tg_bot_image_forwarder/image_forwarder.dart' show DeleteMessageData;
+import 'package:tg_bot_image_forwarder/image_forwarder.dart' show DeleteMessageModule;
 
 class DeleteMessage {
   final Bot _bot;
-  late DeleteMessageData message;
+  late DeleteMessageModule message;
 
   DeleteMessage(this._bot);
 
   void register(Context ctx, List<Message> message) {
-    this.message = DeleteMessageData(chatId: ctx.chat!.id, messageId: message.map((msg) => msg.messageId).toList());
+    this.message = DeleteMessageModule(chatId: ctx.chat!.id, messageId: message.map((msg) => msg.messageId).toList());
   }
 
   Future<void> deleteMessagesAsync(Context ctx) async {

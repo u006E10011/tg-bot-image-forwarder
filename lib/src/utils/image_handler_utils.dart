@@ -1,11 +1,10 @@
-import 'package:tg_bot_image_forwarder/image_forwarder.dart' show ImageData;
+import 'package:tg_bot_image_forwarder/image_forwarder.dart' show MediaModule;
 
 class ImageHandlerUtils {
-  static String captionImage(ImageData data) {
+  static String captionImage(MediaModule data) {
     return '''
 Фильтр: ${data.filter}
-Размер: ${ImageData.formatBytes(data.fileSize, 2)}
-Добавлено: ${ImageData.formatDate(data.createdAt)}
+Добавлено: ${MediaModule.formatDate(data.createdAt)}
 ''';
   }
 }

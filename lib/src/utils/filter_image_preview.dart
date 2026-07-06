@@ -4,14 +4,14 @@ import 'package:televerse/telegram.dart';
 import 'package:televerse/televerse.dart';
 import 'package:tg_bot_image_forwarder/image_forwarder.dart';
 
-class FilterPreview {
+class FilterImagePreview {
   static const int step = 10;
 
   final DataStorage _data;
   final DeleteMessage _deleteMessage;
   int _currentIndex = 0;
 
-  FilterPreview(Bot bot, this._data) : _deleteMessage = DeleteMessage(bot);
+  FilterImagePreview(Bot bot, this._data) : _deleteMessage = DeleteMessage(bot);
 
   Future<void> getPreview(Context ctx) async {
     try {

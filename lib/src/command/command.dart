@@ -4,9 +4,9 @@ import 'package:tg_bot_image_forwarder/image_forwarder.dart';
 class Command {
   final Bot _bot;
   final DataStorage _data;
-  final FilterPreview _filterPreview;
+  final FilterImagePreview _filterPreview;
 
-  Command(this._bot, this._data) : _filterPreview = FilterPreview(_bot, _data);
+  Command(this._bot, this._data) : _filterPreview = FilterImagePreview(_bot, _data);
 
   void registerCommands() {
     _bot.command('start', startCommandAsync);

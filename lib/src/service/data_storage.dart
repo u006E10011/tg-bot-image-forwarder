@@ -8,9 +8,9 @@ class DataStorage {
   static const String fileName = 'data_storage.json';
 
   late String _filePath;
-  Map<String, ImageData> data = {};
+  Map<String, MediaModule> data = {};
 
-  Future<void> addAsync(ImageData imageData) async {
+  Future<void> addAsync(MediaModule imageData) async {
     if (data.containsKey(imageData.fileId)) {
       print('Exist filter or file id [${imageData.filter}/${imageData.fileId}]');
       return;
@@ -20,7 +20,7 @@ class DataStorage {
     await saveAsync();
   }
 
-  ImageData? getImage(String filter) {
+  MediaModule? getImage(String filter) {
     if (data.containsKey(filter)) {
       return data[filter]!;
     }
@@ -92,7 +92,7 @@ class DataStorage {
 
       final json = await file.readAsString(encoding: utf8);
       final decoded = jsonDecode(json) as Map<String, dynamic>;
-      data = decoded.map((key, value) => MapEntry(key, ImageData.fromJson(value)));
+      data = decoded.map((key, value) => MapEntry(key, MediaModule.fromJson(value)));
     } on io.PathNotFoundException {
       print('File not found, starting with empty data');
       data = {};

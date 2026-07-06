@@ -1,36 +1,17 @@
-import 'package:televerse/telegram.dart';
+import 'package:televerse/telegram.dart' show ReplyParameters;
 import 'package:televerse/televerse.dart';
-import 'package:tg_bot_image_forwarder/image_forwarder.dart';
+import 'package:tg_bot_image_forwarder/image_forwarder.dart' show MediaHandler, SubscribeHandler, ImageHandlerUtils, DataStorage, MediaModule, MediaType;
 
-class ImageHandler {
-  final Bot _bot;
-  final DataStorage _data;
+class ImageHander implements MediaHandler {
+  @override
+  Bot<Context> bot;
+  @override
+  DataStorage data;
 
-  ImageHandler(this._bot, this._data);
+  ImageHander(this.bot, this.data);
 
-  void registerHandlers() {
-    print('Registering handlers...');
-
-    _bot.subscribeHandler(
-      _bot.filters.privateChat * _bot.filters.photo * _bot.filters.caption,
-      '📸 Photo with text received',
-      _handleAddImageAsync,
-    );
-
-    _bot.subscribeHandler(
-      _bot.filters.privateChat * _bot.filters.photo - _bot.filters.caption,
-      '📸 Photo with text received',
-      (ctx) => ctx.reply('Добавьте фильтр к изображению'),
-    );
-
-    _bot.subscribeHandler(
-      _bot.filters.text - _bot.filters.command,
-      '📝 Text received',
-      _handleSendImageAsync,
-    );
-  }
-
-  Future<void> _handleAddImageAsync(Context ctx) async {
+  @override
+  Future<void> handleAddAsync(Context ctx) async {
     try {
       final text = ctx.caption?.replaceAll(' ', '').toLowerCase();
       final photo = ctx.message?.photo!.last;
@@ -44,21 +25,16 @@ class ImageHandler {
         return;
       }
 
-      if (_data.getListFilters().contains(text)) {
+      if (data.getListFilters().contains(text)) {
         await ctx.reply('Фильтр "$text" уже существует');
-        await _sendImageAsync(ctx, text);
+        await sendMediaAsync(ctx, text);
 
         return;
       }
 
-      final imageData = ImageData(
-        text,
-        photo.fileId,
-        photo.fileSize!,
-        DateTime.now(),
-      );
+      final filterData = MediaModule(text, photo.fileId, MediaType.image, DateTime.now());
 
-      await _data.addAsync(imageData);
+      await data.addAsync(filterData);
       await ctx.reply('Сохранено с фильтром: "$text"');
     } catch (e) {
       print('Error handling image: $e');
@@ -66,49 +42,52 @@ class ImageHandler {
     }
   }
 
-  Future<void> _handleSendImageAsync(Context ctx) async {
+  @override
+  Future<void> handleSendAsync(Context ctx) async {
     final text = ctx.text?.replaceAll(' ', '').toLowerCase();
     var targetFilter = '';
     if (text == null || text.isEmpty) {
       return;
     }
 
-    for (String filter in _data.getListFilters()) {
+    for (String filter in data.getListFilters()) {
       if (text.contains(filter)) {
         targetFilter = filter;
       }
     }
 
-    if (await _bot.isPublicChat(ctx, false) && targetFilter.isEmpty) {
+    if (await bot.isPublicChat(ctx, false) && targetFilter.isEmpty) {
       return;
     }
 
-    if (await _bot.isPrivateChat(ctx, false) && targetFilter.isEmpty) {
-      await ctx.reply(
-        'Фильтр "$text" не найден. Используйте /filters для просмотра списка',
-      );
+    if (await bot.isPrivateChat(ctx, false) && targetFilter.isEmpty) {
+      await ctx.reply('Фильтр "$text" не найден. Используйте /filters для просмотра списка');
       return;
     }
 
-    await _sendImageAsync(ctx, targetFilter);
+    await sendMediaAsync(ctx, targetFilter);
   }
 
-  Future<void> _sendImageAsync(Context ctx, String filter) async {
+  @override
+  Future<void> sendMediaAsync(Context ctx, String filter) async {
     try {
-      final imageData = _data.getImage(filter)!;
+      final imageData = data.getImage(filter)!;
       final image = InputFile.fromFileId(imageData.fileId);
 
       await ctx.replyWithPhoto(
         image,
-        caption: await _bot.isPrivateChat(ctx, false)
-            ? ImageHandlerUtils.captionImage(imageData)
-            : null,
+        caption: await bot.isPrivateChat(ctx, false) ? ImageHandlerUtils.captionImage(imageData) : null,
         replyParameters: ReplyParameters(messageId: ctx.message!.messageId),
       );
     } catch (e) {
       print('Error sending photo by text: $e');
-      await ctx.reply('Ошибка при поиске фото');
+      await ctx.reply('Ошибка при поиске изображения');
       rethrow;
     }
+  }
+
+  @override
+  bool canHandle(MediaType type) {
+    return type == MediaType.image;
   }
 }

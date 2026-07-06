@@ -5,13 +5,13 @@ class ImageForwarderBot {
   late Bot _bot;
   late DataStorage _storage;
   late Command _command;
-  late ImageHandler _imageHandler;
+  late ImageHander _imageHandler;
 
   ImageForwarderBot({required String token}) {
     _bot = Bot(token);
     _storage = DataStorage();
     _command = Command(_bot, _storage);
-    _imageHandler = ImageHandler(_bot, _storage);
+    _imageHandler = ImageHander(_bot, _storage);
   }
 
   Future<void> start() async {
@@ -19,7 +19,7 @@ class ImageForwarderBot {
       await _storage.loadAsync();
 
       _command.registerCommands();
-      _imageHandler.registerHandlers();
+      // _imageHandler.registerHandlers();
 
       print('Bot started');
       await _bot.start();
