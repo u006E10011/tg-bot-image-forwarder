@@ -43,11 +43,10 @@ class FilterImagePreview {
           if (imageData == null) {
             throw Exception('Image data not found for filter: $filter');
           }
-          if (filters[0] == filter) {
-            return InputMediaPhoto(media: InputFile.fromFileId(imageData.fileId), caption: content);
-          } else {
-            return InputMediaPhoto(media: InputFile.fromFileId(imageData.fileId));
-          }
+          return InputMediaPhoto(
+            media: InputFile.fromFileId(imageData.fileId),
+            caption: filters[0] == filter ? content : null,
+          );
         }).toList(),
       );
 
@@ -82,16 +81,17 @@ class FilterImagePreview {
 
       final maxIndex = (allFilters.length / step).ceil() - 1;
 
-      if (ctx.callbackQuery!.data == 'next') {
-        _currentIndex = min(_currentIndex + 1, maxIndex);
-        await getPreview(ctx);
-      } else if (ctx.callbackQuery!.data == 'back') {
-        _currentIndex = max(_currentIndex - 1, 0);
-        await getPreview(ctx);
-      } else if (ctx.callbackQuery!.data == 'filter_list') {
-        await getListFiltersCommandAsync(ctx);
-      } else if (ctx.callbackQuery!.data == 'none') {
-        await ctx.answerCallbackQuery(text: 'Эта кнопка неактивна');
+      switch (ctx.callbackQuery!.data) {
+        case var data when data == 'next' || data == 'back':
+          _currentIndex = min(_currentIndex + (data == 'next' ? 1 : -1), maxIndex);
+          await getPreview(ctx);
+          break;
+        case 'filter_list':
+          await getListFiltersCommandAsync(ctx);
+          break;
+        case 'none':
+          await ctx.answerCallbackQuery(text: 'Эта кнопка неактивна');
+          break;
       }
     } catch (e, stackTrace) {
       print('Error in callbackQueryHandler: $e');
