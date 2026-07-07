@@ -107,14 +107,16 @@ class FilterImagePreview {
   Future<void> getListFiltersCommandAsync(Context ctx) async {
     try {
       final filters = _data.getListMediaFilters();
-      final text = TreeFormatter.format(filters);
 
       if (filters.isEmpty) {
         await ctx.reply('Нет фильтров');
         return;
       }
 
-      await ctx.reply('Фильтры: ${filters.length}\n$text');
+      final sorted = _data.data.values.toList()..sort((a, b) => a.filterType.index.compareTo(b.filterType.index));
+      final text = sorted.map((x) => '[${x.filterType.toString()}] <code>${x.filter}</code>').join('\n');
+
+      await ctx.reply('Фильтры: ${filters.length}\n$text', parseMode: ParseMode.html);
     } catch (e) {
       print('Error sending list commands: $e');
       try {

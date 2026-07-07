@@ -15,7 +15,12 @@ class MediaModule {
   }
 
   Map<String, dynamic> toJson() {
-    return {'filter': filter, 'fileId': fileId, 'filterType': filterType.toString(), 'createdAt': createdAt.toIso8601String()};
+    return {
+      'filter': filter,
+      'fileId': fileId,
+      'filterType': filterType.toString(),
+      'createdAt': createdAt.toIso8601String(),
+    };
   }
 
   MediaModule.fromJson(Map<String, dynamic> json)
@@ -29,4 +34,17 @@ class MediaModule {
   }
 }
 
-enum MediaType { image, sticker }
+enum MediaType {
+  image,
+  sticker;
+
+  @override
+  String toString() {
+    switch (this) {
+      case MediaType.image:
+        return 'Image';
+      case MediaType.sticker:
+        return 'Sticker';
+    }
+  }
+}
