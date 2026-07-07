@@ -12,8 +12,8 @@ class ImageForwarderBot {
     _bot = Bot(token);
     _storage = DataStorage();
     _mediaHandlerFactory = MediaHandlerFactory(_bot, _storage);
-    _command = Command(_bot, _storage, _mediaHandlerFactory);
-    _filterHandler = FilterHandler();
+    _command = Command(_bot, _storage);
+    _filterHandler = FilterHandler(_bot, _storage, _mediaHandlerFactory);
   }
 
   Future<void> start() async {
@@ -21,7 +21,7 @@ class ImageForwarderBot {
       await _storage.loadAsync();
 
       _command.registerCommands();
-      _filterHandler.register(_bot, _mediaHandlerFactory);
+      _filterHandler.register();
 
       print('Bot started');
       await _bot.start();

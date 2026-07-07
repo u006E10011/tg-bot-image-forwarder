@@ -11,7 +11,7 @@ class DataStorage {
   Map<String, MediaModule> data = {};
 
   Future<void> addAsync(MediaModule media) async {
-    if (data.containsKey(media.fileId)) {
+    if (data.containsKey(media.filter)) {
       print('Exist filter or file id [${media.filter}/${media.fileId}]');
       return;
     }
@@ -28,7 +28,7 @@ class DataStorage {
     return null;
   }
 
-  List<String> getListFilters() {
+  List<String> getListMediaFilters() {
     if (data.isNotEmpty) {
       return data.keys.toList();
     }
@@ -109,4 +109,8 @@ class DataStorage {
       rethrow;
     }
   }
+}
+
+class FilterConverter {
+  static void create(String filter) {}
 }

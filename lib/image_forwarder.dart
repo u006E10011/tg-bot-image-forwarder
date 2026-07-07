@@ -1,5 +1,3 @@
-library image_forwarder;
-
 // Core
 export 'package:tg_bot_image_forwarder/src/bot.dart';
 export 'package:tg_bot_image_forwarder/src/command/command.dart';

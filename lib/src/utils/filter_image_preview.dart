@@ -29,7 +29,8 @@ class FilterImagePreview {
       final range = (index, min(index + step, allFilters.length));
       final filters = allFilters.getRange(range.$1, range.$2).toList();
 
-      final content = 'Фильтры (image/sticker/total): ${allFilters.length}/${_data.getListFiltersByType(MediaType.sticker).length}/${_data.getListFilters().length}\n${TreeFormatter.formatRange(allFilters, range.$1, range.$2)}';
+      final content =
+          'Фильтры (image/sticker/total): ${allFilters.length}/${_data.getListFiltersByType(MediaType.sticker).length}/${_data.getListMediaFilters().length}\n${TreeFormatter.formatRange(allFilters, range.$1, range.$2)}';
       final keyboard = InlineKeyboard()
           .text(_currentIndex > 0 ? '<< 10' : ' --- ', _currentIndex > 0 ? 'back' : 'none')
           .text(_currentIndex < maxIndex ? '10 >>' : ' --- ', _currentIndex < maxIndex ? 'next' : 'none')
@@ -105,7 +106,7 @@ class FilterImagePreview {
 
   Future<void> getListFiltersCommandAsync(Context ctx) async {
     try {
-      final filters = _data.getListFilters();
+      final filters = _data.getListMediaFilters();
       final text = TreeFormatter.format(filters);
 
       if (filters.isEmpty) {

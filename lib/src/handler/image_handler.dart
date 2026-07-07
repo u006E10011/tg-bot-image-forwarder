@@ -12,26 +12,17 @@ class ImageHandler implements MediaHandler {
   ImageHandler(this.bot, this.data);
 
   @override
-  Future<void> handleAddAsync(Context ctx) async {
-    final text = ctx.argsString!.toLowerCase();
-
+  Future<void> handleAddAsync(Context ctx, String filter) async {
     try {
-      if (data.getListFilters().contains(text)) {
-        await ctx.reply('Фильтр "$text" уже существует');
-        await sendMediaAsync(ctx, text);
-
-        return;
-      }
-
       final filterData = MediaModule(
-        text,
+        filter,
         ctx.message!.replyToMessage!.photo!.last.fileId,
         MediaType.image,
         DateTime.now(),
       );
 
       await data.addAsync(filterData);
-      await ctx.reply('Сохранено с фильтром: "$text"');
+      await ctx.reply('Сохранено с фильтром: "$filter"');
     } catch (e) {
       print('Error handling image: $e');
       await ctx.reply('Произошла ошибка при обработке фото');
@@ -39,39 +30,10 @@ class ImageHandler implements MediaHandler {
   }
 
   @override
-  Future<void> handleSendAsync(Context ctx) async {
-    final text = ctx.text?.toLowerCase();
-    var targetFilter = '';
-    if (text == null || text.isEmpty) {
-      return;
-    }
-
-    for (String filter in data.getListFilters()) {
-      if (text.contains(filter)) {
-        targetFilter = filter;
-      }
-    }
-
-    if (await bot.isPublicChat(ctx, false) && targetFilter.isEmpty) {
-      return;
-    }
-
-    if (await bot.isPrivateChat(ctx, false) && targetFilter.isEmpty) {
-      await ctx.reply('Фильтр "$text" не найден. Используйте /filters для просмотра списка');
-      return;
-    }
-
-    await sendMediaAsync(ctx, targetFilter);
-  }
-
-  @override
-  Future<void> sendMediaAsync(Context ctx, String filter) async {
+  Future<void> sendMediaAsync(Context ctx, MediaModule media) async {
     try {
-      final media = data.getMedia(filter)!;
-      final image = InputFile.fromFileId(media.fileId);
-
       await ctx.replyWithPhoto(
-        image,
+        InputFile.fromFileId(media.fileId),
         caption: await bot.isPrivateChat(ctx, false) ? ImageHandlerUtils.captionImage(media) : null,
         replyParameters: ReplyParameters(messageId: ctx.message!.messageId),
       );
