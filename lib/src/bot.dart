@@ -12,7 +12,7 @@ class ImageForwarderBot {
     _bot = Bot(token);
     _storage = DataStorage();
     _mediaHandlerFactory = MediaHandlerFactory(_bot, _storage);
-    _command = Command(_bot, _storage);
+    _command = Command(_bot);
     _filterHandler = FilterHandler(_bot, _storage, _mediaHandlerFactory);
   }
 

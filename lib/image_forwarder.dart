@@ -20,7 +20,7 @@ export 'package:tg_bot_image_forwarder/src/module/delete_message_module.dart';
 // Utils
 export 'package:tg_bot_image_forwarder/src/utils/tree_formatter.dart';
 export 'package:tg_bot_image_forwarder/src/utils/image_handler_utils.dart';
-export 'package:tg_bot_image_forwarder/src/utils/filter_image_preview.dart';
+export 'package:tg_bot_image_forwarder/src/handler/base/filter_preview.dart';
 
 // Extestion
 export 'package:tg_bot_image_forwarder/src/utils/extesions.dart';

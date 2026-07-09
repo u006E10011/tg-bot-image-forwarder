@@ -110,7 +110,3 @@ class DataStorage {
     }
   }
 }
-
-class FilterConverter {
-  static void create(String filter) {}
-}

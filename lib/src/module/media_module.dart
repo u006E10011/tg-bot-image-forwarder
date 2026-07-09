@@ -35,12 +35,15 @@ class MediaModule {
 }
 
 enum MediaType {
+  all,
   image,
   sticker;
 
   @override
   String toString() {
     switch (this) {
+      case MediaType.all:
+        return 'All';
       case MediaType.image:
         return 'Image';
       case MediaType.sticker:

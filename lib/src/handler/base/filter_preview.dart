@@ -13,7 +13,7 @@ class FilterImagePreview {
 
   FilterImagePreview(Bot bot, this._data) : _deleteMessage = DeleteMessage(bot);
 
-  Future<void> getPreview(Context ctx) async {
+  Future<void> getImagePreview(Context ctx) async {
     try {
       await _deleteMessage.deleteMessagesAsync(ctx);
 
@@ -35,7 +35,7 @@ class FilterImagePreview {
           .text(_currentIndex > 0 ? '<< 10' : ' --- ', _currentIndex > 0 ? 'back' : 'none')
           .text(_currentIndex < maxIndex ? '10 >>' : ' --- ', _currentIndex < maxIndex ? 'next' : 'none')
           .row()
-          .text('Список фильтров', 'filter_list');
+          .text('Список фильтров', 'filter_image');
 
       var mediaGroupMessage = await ctx.replyWithMediaGroup(
         filters.map((filter) {
@@ -84,14 +84,17 @@ class FilterImagePreview {
       switch (ctx.callbackQuery!.data) {
         case var data when data == 'next' || data == 'back':
           _currentIndex = min(_currentIndex + (data == 'next' ? 1 : -1), maxIndex);
-          await getPreview(ctx);
-          break;
-        case 'filter_list':
-          await getListFiltersCommandAsync(ctx);
-          break;
+          await getImagePreview(ctx);
+        case 'filter_image_preview':
+          await getImagePreview(ctx);
+        case 'filter_image':
+          await getListFilterByType(ctx, MediaType.image);
+        case 'filter_sticker':
+          await getListFilterByType(ctx, MediaType.sticker);
+        case 'filter_all':
+          await getListFilterByType(ctx, MediaType.all);
         case 'none':
           await ctx.answerCallbackQuery(text: 'Эта кнопка неактивна');
-          break;
       }
     } catch (e, stackTrace) {
       print('Error in callbackQueryHandler: $e');
@@ -104,23 +107,30 @@ class FilterImagePreview {
     }
   }
 
-  Future<void> getListFiltersCommandAsync(Context ctx) async {
+  Future<void> getListFilterByType(Context ctx, MediaType media) async {
     try {
-      final filters = _data.getListMediaFilters();
-
-      if (filters.isEmpty) {
+      if (_data.data.isEmpty) {
         await ctx.reply('Нет фильтров');
         return;
       }
 
-      final sorted = _data.data.values.toList()..sort((a, b) => a.filterType.index.compareTo(b.filterType.index));
+      final sorted = _data.data.values.where((x) {
+        if (media == MediaType.all) {
+          return x.filterType != MediaType.all;
+        }
+        return x.filterType == media;
+      });
       final text = sorted.map((x) => '[${x.filterType.toString()}] <code>${x.filter}</code>').join('\n');
 
-      await ctx.reply('Фильтры: ${filters.length}\n$text', parseMode: ParseMode.html);
+      await ctx.reply(
+        'Фильтры: ${sorted.length}\n$text',
+        parseMode: ParseMode.html,
+        replyMarkup: InlineKeyboard().text("Предосмотр", 'filter_image_preview'),
+      );
     } catch (e) {
       print('Error sending list commands: $e');
       try {
-        await ctx.reply('Ошибка при получении списка фильтров');
+        await ctx.reply('Ошибка при получении списка фильтров [$media]');
       } catch (replyError) {
         print('Error sending error message: $replyError');
       }

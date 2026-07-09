@@ -1,6 +1,7 @@
-// ignore_for_file: unrelated_type_equality_checks
+// ignore_for_file: pattern_never_matches_value_type, unrelated_type_equality_checks
 
-import 'package:televerse/televerse.dart' show Bot, Context, ContextAwareMethods;
+import 'package:televerse/telegram.dart';
+import 'package:televerse/televerse.dart' show Bot, Context, ContextAwareMethods, InlineKeyboard;
 import 'package:tg_bot_image_forwarder/image_forwarder.dart'
     show MediaHandlerFactory, SubscribeHandler, FilterImagePreview, MediaType, DataStorage;
 
@@ -14,10 +15,14 @@ class FilterHandler {
 
   void register() {
     bot.subscribeHandler(bot.filters.cmd('filter'), '[CREATE]', createFilterAsync);
-    bot.subscribeHandler(bot.filters.text, '[SEND]', handleSendMediaAsync);
+    bot.subscribeHandler(
+      bot.filters.text - (bot.filters.command + bot.filters.callbackQuery),
+      '[SEND]',
+      handleSendMediaAsync,
+    );
     bot.subscribeHandler(bot.filters.cmd('edit'), '[EDIT]', editFilterAsync);
     bot.subscribeHandler(bot.filters.cmd('remove'), '[REMOVE]', removeFilterAsync);
-    bot.subscribeHandler(bot.filters.cmd('filters'), '[FILTERS]', _filterPreview.getPreview);
+    bot.subscribeHandler(bot.filters.cmd('filters'), '[FILTERS]', getListFilterAsync);
 
     bot.onCallbackQuery(_filterPreview.callbackQueryHandler);
   }
@@ -83,14 +88,11 @@ class FilterHandler {
     final media = data.getMedia(targetFilter!)!;
 
     try {
-      switch (media.filterType) {
-        case MediaType.image:
-          await handler.getHandler(MediaType.image).sendMediaAsync(ctx, media);
-          break;
-        case MediaType.sticker:
-          await handler.getHandler(MediaType.sticker).sendMediaAsync(ctx, media);
-          break;
-      }
+      await switch (media.filterType) {
+        MediaType.image => handler.getHandler(MediaType.image).sendMediaAsync(ctx, media),
+        MediaType.sticker => handler.getHandler(MediaType.sticker).sendMediaAsync(ctx, media),
+        _ => Future<void>.value(),
+      };
     } catch (e) {
       print('Error sending media: $e');
       await ctx.reply('Произошла ошибка при отправке медиа: [${media.filterType.toString()}] $targetFilter');
@@ -140,6 +142,31 @@ class FilterHandler {
     } catch (e) {
       print('Error editing filter: $e');
       await ctx.reply('Произошла ошибка при изменении фильтра');
+      rethrow;
+    }
+  }
+
+  Future<void> getListFilterAsync(Context ctx) async {
+    try {
+      await switch (ctx.args.firstOrNull ?? '') {
+        '-image' || '-img' || '-i' => _filterPreview.getListFilterByType(ctx, MediaType.image),
+        '-sticker' || '-stk' || '-s' => _filterPreview.getListFilterByType(ctx, MediaType.sticker),
+        '-all' || '-a' => _filterPreview.getListFilterByType(ctx, MediaType.all),
+        _ => ctx.reply(
+          '<b>Доступные параметры /filters</b>\n\n'
+          '<b>Изображения:</b> <code>-image</code>, <code>-img</code>, <code>-i</code>\n'
+          '<b>Стикеры:</b> <code>-sticker</code>, <code>-stk</code>, <code>-s</code>\n'
+          '<b>Все фильтры:</b> <code>-all</code>, <code>-a</code>\n\n'
+          '<i>Пример:</i> <code>/filters -all</code>',
+          parseMode: ParseMode.html,
+          replyMarkup: InlineKeyboard()
+              .text('Image', 'filter_image')
+              .text('Sticker', 'filter_sticker')
+              .text('All', 'filter_all'),
+        ),
+      };
+    } catch (e) {
+      print("Error send filter list [${ctx.argsString}]\n$e");
       rethrow;
     }
   }

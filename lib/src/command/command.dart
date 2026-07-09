@@ -1,11 +1,9 @@
 import 'package:televerse/televerse.dart';
-import 'package:tg_bot_image_forwarder/image_forwarder.dart';
 
 class Command {
   final Bot _bot;
-  final DataStorage _data;
 
-  Command(this._bot, this._data);
+  Command(this._bot);
 
   void registerCommands() {
     _bot.command('start', startCommandAsync);
@@ -31,7 +29,7 @@ class Command {
         '/filter <filter_name> - Создать фильтр\n'
         '/remove <filter_name> - Удалить фильтр\n'
         '/edit <old_filter_name> <new_filter_name> - Изменить фильтр\n'
-        '<filter_name> - Найти изображение по фильтру\n'
+        '<filter_name> - Поиск медиа по фильтру\n'
         '/filters - Список фильтров',
       );
     } catch (e) {
