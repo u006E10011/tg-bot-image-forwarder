@@ -4,19 +4,12 @@ import 'package:tg_bot_image_forwarder/image_forwarder.dart';
 class Command {
   final Bot _bot;
   final DataStorage _data;
-  final FilterImagePreview _filterPreview;
 
-  Command(this._bot, this._data) : _filterPreview = FilterImagePreview(_bot, _data);
+  Command(this._bot, this._data);
 
   void registerCommands() {
     _bot.command('start', startCommandAsync);
     _bot.command('help', helpCommandAsync);
-    // _bot.command('filter', (_) {});
-    _bot.command('filters', _filterPreview.getPreview);
-    _bot.command('remove', removeFilterAsync);
-    _bot.command('edit', editFilterAsync);
-
-    _bot.onCallbackQuery(_filterPreview.callbackQueryHandler);
   }
 
   Future<void> startCommandAsync(Context ctx) async {
@@ -44,53 +37,6 @@ class Command {
     } catch (e) {
       print('Error sending help message: $e');
       await ctx.reply('Ошибка при получении помощи');
-    }
-  }
-
-  Future<void> removeFilterAsync(Context ctx) async {
-    if (ctx.args.isEmpty || await _bot.isPublicChat(ctx)) {
-      return;
-    }
-
-    if (_data.getListMediaFilters().contains(ctx.args[0])) {
-      await _data.removeFilterAsync(ctx.args[0]);
-      await ctx.reply('Удалён фильтр: ${ctx.args[0]}');
-    } else {
-      await ctx.reply('Фильтра "${ctx.args[0]}" не существует. Посмотреть список фильтров /filters');
-    }
-  }
-
-  Future<void> editFilterAsync(Context ctx) async {
-    if (await _bot.isPublicChat(ctx)) {
-      return;
-    }
-
-    if (ctx.args.length < 2) {
-      await ctx.reply('Используйте: /edit <old_filter> <new_filter>');
-      return;
-    }
-
-    final oldFilter = ctx.args[0];
-    final newFilter = ctx.args[1];
-    final listFilters = _data.getListMediaFilters();
-
-    if (!listFilters.contains(oldFilter)) {
-      await ctx.reply('Фильтр "$oldFilter" не найден');
-      return;
-    }
-
-    if (listFilters.contains(newFilter)) {
-      await ctx.reply('Фильтр "$newFilter" уже существует');
-      return;
-    }
-
-    try {
-      await _data.editFilterAsync(oldFilter, newFilter);
-      await ctx.reply('Фильтр "$oldFilter" изменён на "$newFilter"');
-    } catch (e) {
-      print('Error editing filter: $e');
-      await ctx.reply('Произошла ошибка при изменении фильтра');
-      rethrow;
     }
   }
 }

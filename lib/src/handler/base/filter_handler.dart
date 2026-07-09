@@ -1,20 +1,25 @@
 // ignore_for_file: unrelated_type_equality_checks
 
 import 'package:televerse/televerse.dart' show Bot, Context, ContextAwareMethods;
-import 'package:tg_bot_image_forwarder/image_forwarder.dart' show MediaHandlerFactory, SubscribeHandler;
-import 'package:tg_bot_image_forwarder/src/module/media_module.dart' show MediaType;
-import 'package:tg_bot_image_forwarder/src/service/data_storage.dart' show DataStorage;
+import 'package:tg_bot_image_forwarder/image_forwarder.dart'
+    show MediaHandlerFactory, SubscribeHandler, FilterImagePreview, MediaType, DataStorage;
 
 class FilterHandler {
   final Bot bot;
   final DataStorage data;
   final MediaHandlerFactory handler;
+  final FilterImagePreview _filterPreview;
 
-  FilterHandler(this.bot, this.data, this.handler);
+  FilterHandler(this.bot, this.data, this.handler) : _filterPreview = FilterImagePreview(bot, data);
 
   void register() {
-    bot.subscribeHandler(bot.filters.cmd('filter'), '[CreateFilter]', createFilterAsync);
-    bot.subscribeHandler(bot.filters.text, '[SendMedia]', handleSendMediaAsync);
+    bot.subscribeHandler(bot.filters.cmd('filter'), '[CREATE]', createFilterAsync);
+    bot.subscribeHandler(bot.filters.text, '[SEND]', handleSendMediaAsync);
+    bot.subscribeHandler(bot.filters.cmd('edit'), '[EDIT]', editFilterAsync);
+    bot.subscribeHandler(bot.filters.cmd('remove'), '[REMOVE]', removeFilterAsync);
+    bot.subscribeHandler(bot.filters.cmd('filters'), '[FILTERS]', _filterPreview.getPreview);
+
+    bot.onCallbackQuery(_filterPreview.callbackQueryHandler);
   }
 
   Future<void> createFilterAsync(Context ctx) async {
@@ -89,6 +94,53 @@ class FilterHandler {
     } catch (e) {
       print('Error sending media: $e');
       await ctx.reply('Произошла ошибка при отправке медиа: [${media.filterType.toString()}] $targetFilter');
+    }
+  }
+
+  Future<void> removeFilterAsync(Context ctx) async {
+    if (ctx.args.isEmpty || await bot.isPublicChat(ctx)) {
+      return;
+    }
+
+    if (data.getListMediaFilters().contains(ctx.args[0])) {
+      await data.removeFilterAsync(ctx.args[0]);
+      await ctx.reply('Удалён фильтр: ${ctx.args[0]}');
+    } else {
+      await ctx.reply('Фильтра "${ctx.args[0]}" не существует. Посмотреть список фильтров /filters');
+    }
+  }
+
+  Future<void> editFilterAsync(Context ctx) async {
+    if (await bot.isPublicChat(ctx)) {
+      return;
+    }
+
+    if (ctx.args.length < 2) {
+      await ctx.reply('Используйте: /edit <old_filter> <new_filter>');
+      return;
+    }
+
+    final oldFilter = ctx.args[0];
+    final newFilter = ctx.args[1];
+    final listFilters = data.getListMediaFilters();
+
+    if (!listFilters.contains(oldFilter)) {
+      await ctx.reply('Фильтр "$oldFilter" не найден');
+      return;
+    }
+
+    if (listFilters.contains(newFilter)) {
+      await ctx.reply('Фильтр "$newFilter" уже существует');
+      return;
+    }
+
+    try {
+      await data.editFilterAsync(oldFilter, newFilter);
+      await ctx.reply('Фильтр "$oldFilter" изменён на "$newFilter"');
+    } catch (e) {
+      print('Error editing filter: $e');
+      await ctx.reply('Произошла ошибка при изменении фильтра');
+      rethrow;
     }
   }
 }
