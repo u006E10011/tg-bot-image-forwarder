@@ -91,6 +91,8 @@ class FilterImagePreview {
           await getListFilterByType(ctx, MediaType.image);
         case 'filter_sticker':
           await getListFilterByType(ctx, MediaType.sticker);
+        case 'filter_gif':
+          await getListFilterByType(ctx, MediaType.gif);
         case 'filter_all':
           await getListFilterByType(ctx, MediaType.all);
         case 'none':
@@ -125,7 +127,7 @@ class FilterImagePreview {
       await ctx.reply(
         'Фильтры: ${sorted.length}\n$text',
         parseMode: ParseMode.html,
-        replyMarkup: InlineKeyboard().text("Предосмотр", 'filter_image_preview'),
+        replyMarkup: media == MediaType.image ? InlineKeyboard().text("Предосмотр", 'filter_image_preview') : null,
       );
     } catch (e) {
       print('Error sending list commands: $e');

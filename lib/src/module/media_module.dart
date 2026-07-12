@@ -37,7 +37,8 @@ class MediaModule {
 enum MediaType {
   all,
   image,
-  sticker;
+  sticker,
+  gif;
 
   @override
   String toString() {
@@ -48,6 +49,8 @@ enum MediaType {
         return 'Image';
       case MediaType.sticker:
         return 'Sticker';
+      case MediaType.gif:
+        return 'Gif';
     }
   }
 }

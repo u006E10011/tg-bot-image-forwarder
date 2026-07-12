@@ -33,14 +33,12 @@ class FilterHandler {
         return;
       }
 
-      if (ctx.text?.length == 7) {
-        await ctx.reply("Создать фильтр: /filter <filter_name>");
-      } else if (ctx.text!.length > 7) {
+      if (ctx.args.isNotEmpty) {
         final replyMsg = ctx.message?.replyToMessage;
         final filter = ctx.argsString!.toLowerCase();
 
         if (replyMsg != null) {
-          if (data.getListFiltersByType(MediaType.image).contains(filter)) {
+          if (data.exist(filter)) {
             final media = data.getMedia(filter)!;
             await ctx.reply('Фильтр "$filter" уже существует');
             await handler.getHandler(media.filterType).sendMediaAsync(ctx, media);
@@ -50,14 +48,18 @@ class FilterHandler {
 
           switch (replyMsg) {
             case var msg when msg.photo != null:
-              print('Photo ${msg.photo!.last.fileId}');
               await handler.getHandler(MediaType.image).handleAddAsync(ctx, filter);
             case var msg when msg.sticker != null:
               await handler.getHandler(MediaType.sticker).handleAddAsync(ctx, filter);
+            case var msg when msg.animation != null:
+              await handler.getHandler(MediaType.gif).handleAddAsync(ctx, filter);
           }
         }
+      } else {
+        await ctx.reply("Создать фильтр: /filter <filter_name>");
       }
     } catch (e) {
+      print('Error when creating filter: $e');
       await ctx.reply('Ошибка при создании фильтра: $e');
     }
   }
@@ -88,11 +90,7 @@ class FilterHandler {
     final media = data.getMedia(targetFilter!)!;
 
     try {
-      await switch (media.filterType) {
-        MediaType.image => handler.getHandler(MediaType.image).sendMediaAsync(ctx, media),
-        MediaType.sticker => handler.getHandler(MediaType.sticker).sendMediaAsync(ctx, media),
-        _ => Future<void>.value(),
-      };
+      await handler.getHandler(media.filterType).sendMediaAsync(ctx, media);
     } catch (e) {
       print('Error sending media: $e');
       await ctx.reply('Произошла ошибка при отправке медиа: [${media.filterType.toString()}] $targetFilter');
@@ -151,6 +149,7 @@ class FilterHandler {
       await switch (ctx.args.firstOrNull ?? '') {
         '-image' || '-img' || '-i' => _filterPreview.getListFilterByType(ctx, MediaType.image),
         '-sticker' || '-stk' || '-s' => _filterPreview.getListFilterByType(ctx, MediaType.sticker),
+        '-gif' || '-g' => _filterPreview.getListFilterByType(ctx, MediaType.gif),
         '-all' || '-a' => _filterPreview.getListFilterByType(ctx, MediaType.all),
         _ => ctx.reply(
           '<b>Доступные параметры /filters</b>\n\n'
@@ -162,6 +161,8 @@ class FilterHandler {
           replyMarkup: InlineKeyboard()
               .text('Image', 'filter_image')
               .text('Sticker', 'filter_sticker')
+              .text('GIF', 'filter_gif')
+              .row()
               .text('All', 'filter_all'),
         ),
       };

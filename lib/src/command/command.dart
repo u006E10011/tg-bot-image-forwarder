@@ -1,6 +1,5 @@
 import 'package:televerse/telegram.dart' show ParseMode;
 import 'package:televerse/televerse.dart';
-import 'dart:io';
 
 class Command {
   final Bot _bot;
@@ -15,11 +14,12 @@ class Command {
   Future<void> startCommandAsync(Context ctx) async {
     try {
       await ctx.reply('''
-Позволяет сохранять медиа по «имени/фильтру» (изображения и стикеры) и затем отправлять по текстовому запросу.
+Позволяет сохранять медиа по «имени/фильтру» и затем отправлять по текстовому запросу.
 
 1. Фильтры создаются командой `/filter <filter_name>` в **ответ** на сообщение с:
    - фото (сохраняется как `MediaType.image`)
    - стикером (сохраняется как `MediaType.sticker`)
+   - GIF (сохраняется как `MediaType.gif`)
 2. Имя фильтра используется как ключ.
 3. Медиа сохраняется в `data/data_storage.json` (fileId + метаданные).
 4. Далее бот парсит текст и по **вхождению** имени фильтра в текст отправляет сохранённое медиа.
@@ -39,6 +39,7 @@ class Command {
 `/filters [param]` — Список фильтров (порциями по 10, с inline-кнопками перелистывания)
     `-image`, `-img`, `-i` — только изображениях
     `-sticker`, `-stk`, `-s` — только стикеры
+    `-gif`, `-g` — только GIF
     `-all`, `-a` — все фильтры
 `/remove <filter_name>` — Удалить фильтр
 `/edit <old_filter> <new_filter>` — Переименовать фильтр

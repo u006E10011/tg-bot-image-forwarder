@@ -10,14 +10,25 @@ class DataStorage {
   late String _filePath;
   Map<String, MediaModule> data = {};
 
-  Future<void> addAsync(MediaModule media) async {
+  bool exist(String filter) {
+    bool isExist = false;
+    data.forEach((_, v) {
+      if (v.filter == filter) {
+        isExist = true;
+      }
+    });
+    return isExist;
+  }
+
+  Future<bool> addAsync(MediaModule media) async {
     if (data.containsKey(media.filter)) {
       print('Exist filter or file id [${media.filter}/${media.fileId}]');
-      return;
+      return false;
     }
 
     data[media.filter] = media;
     await saveAsync();
+    return true;
   }
 
   MediaModule? getMedia(String filter) {

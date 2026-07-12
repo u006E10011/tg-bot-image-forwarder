@@ -1,12 +1,13 @@
 # tg-bot-image-forwarder
 
-Telegram-бот на Dart, который позволяет сохранять медиа по «имени/фильтру» (изображения и стикеры) и затем отправлять по текстовому запросу.
+Telegram-бот на Dart, который позволяет сохранять медиа по «имени/фильтру» и затем отправлять по текстовому запросу.
 
 ## Как работает
 
 1. Фильтры создаются командой `/filter <filter_name>` в **ответ** на сообщение с:
    - фото (сохраняется как `MediaType.image`)
    - стикером (сохраняется как `MediaType.sticker`)
+   - GIF (сохраняется как `MediaType.gif`)
 2. Имя фильтра используется как ключ.
 3. Медиа сохраняется в `data/data_storage.json` (fileId + метаданные).
 4. Далее бот парсит текст и по **вхождению** имени фильтра в текст отправляет сохранённое медиа.
@@ -21,6 +22,7 @@ Telegram-бот на Dart, который позволяет сохранять 
   - параметры:
     - `-image`, `-img`, `-i` — только изображениях
     - `-sticker`, `-stk`, `-s` — только стикеры
+    - `-gif`, `-g` — только GIF
     - `-all`, `-a` — все фильтры
 - `/remove <filter_name>` — Удалить фильтр.
 - `/edit <old_filter> <new_filter>` — Переименовать фильтр.
@@ -29,7 +31,7 @@ Telegram-бот на Dart, который позволяет сохранять 
 Отправка медиа выполняется, когда пользователь присылает текст без команды:
 - бот приводит текст к нижнему регистру
 - ищет первый фильтр, имя которого встречается в тексте (substring match)
-- отправляет сохранённое медиа соответствующего типа (`image`/`sticker`)
+- отправляет сохранённое медиа соответствующего типа (`image`/`sticker`/`gif`)
 
 ## Структура проекта
 
@@ -39,6 +41,7 @@ Telegram-бот на Dart, который позволяет сохранять 
 - `lib/src/handler/base/filter_handler.dart` — логика команд: `/filter`, `/remove`, `/edit`, `/filters`, а также отправка медиа по тексту.
 - `lib/src/handler/image_handler.dart` — добавление/отправка **картинок**.
 - `lib/src/handler/sticker_handler.dart` — добавление/отправка **стикеров**.
+- `lib/src/handler/gif_handler.dart` — добавление/отправка **GIF**.
 - `lib/src/handler/base/filter_preview.dart` — UI превью списка фильтров (media group + inline keyboard) и callback.
 - `lib/src/service/data_storage.dart` — хранение/загрузка `MediaModule` в `data/data_storage.json`.
 - `lib/src/service/delete_message.dart` — удаление сообщений из превью списка.
@@ -75,7 +78,7 @@ dart run bin/main.dart
 - значение — объект `MediaModule`, включая:
   - `filter` — имя фильтра
   - `fileId` — Telegram fileId
-  - `filterType` — `Image` или `Sticker`
+  - `filterType` — `Image`, `Sticker` и `Gif`
   - `createdAt` — ISO-строка времени создания
 
 Пример:
